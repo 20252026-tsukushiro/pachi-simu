@@ -1037,7 +1037,7 @@
     }
 
     const rate = parseFloat(selectRate.value);
-    const cashout = Math.floor(balls / (448 * (1.25 / rate))) * 500;
+    const cashout = Math.floor(balls * rate / 1.12 / 500) * 500;
     const balance = cashout - investment;
 
     historyData.push({
