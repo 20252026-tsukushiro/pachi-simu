@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>e ソードアート・オンライン 閃光の軌跡 99ver.</title>
+  <title>パチンコシミュレーター</title>
   <style>
     :root {
       --bg-color: #0f111a;
@@ -42,13 +42,37 @@
       border: 1px solid #2a2f4c;
     }
 
-    h1 {
-      font-size: 1.1rem;
-      text-align: center;
+    /* 機種選択プルダウン見出し */
+    .machine-select-container {
       margin-bottom: 15px;
-      color: var(--accent-color);
+      text-align: center;
       border-bottom: 2px solid var(--accent-color);
       padding-bottom: 8px;
+    }
+
+    .machine-select {
+      background: transparent;
+      color: var(--accent-color);
+      border: none;
+      font-size: 1.05rem;
+      font-weight: bold;
+      text-align: center;
+      text-align-last: center;
+      width: 100%;
+      cursor: pointer;
+      outline: none;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+
+    .machine-select option {
+      background-color: var(--card-bg);
+      color: var(--text-color);
+    }
+
+    .machine-select:disabled {
+      opacity: 0.8;
+      cursor: not-allowed;
     }
 
     /* ステータス表示部 */
@@ -75,7 +99,7 @@
       color: #fff;
     }
 
-    /* 設定エリア（速度・自動入金） */
+    /* 設定エリア */
     .setting-panel {
       display: flex;
       flex-direction: column;
@@ -91,6 +115,27 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+    }
+
+    .setting-group-inline {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .select-box {
+      background: #1a1d2e;
+      color: #fff;
+      border: 1px solid #2a2f4c;
+      border-radius: 4px;
+      padding: 3px 6px;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+
+    .select-box:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
 
     .speed-btn-group {
@@ -247,7 +292,7 @@
     .modal-content {
       background: var(--card-bg);
       width: 90%;
-      max-width: 420px;
+      max-width: 440px;
       max-height: 80vh;
       border-radius: 12px;
       padding: 20px;
@@ -274,7 +319,7 @@
       margin-top: 15px;
       font-family: monospace;
       white-space: pre-wrap;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       background: #111322;
       padding: 10px;
       border-radius: 6px;
@@ -287,8 +332,20 @@
     }
 
     .history-table th, .history-table td {
-      padding: 6px 4px;
+      padding: 6px 2px;
       border-bottom: 1px solid #2a2f4c;
+    }
+
+    .icon-sword {
+      color: var(--red-color);
+      margin: 0 1px;
+      font-size: 0.95rem;
+    }
+
+    .icon-lightning {
+      color: var(--gold-color);
+      margin: 0 1px;
+      font-size: 0.95rem;
     }
 
     .summary-border {
@@ -314,7 +371,13 @@
 <body>
 
 <div class="container">
-  <h1>e ソードアート・オンライン 閃光の軌跡 99ver.</h1>
+  <!-- 見出し（機種選択プルダウン） -->
+  <div class="machine-select-container">
+    <select id="select-machine" class="machine-select">
+      <option value="sao_99">e ソードアート・オンライン 閃光の軌跡 99ver.</option>
+      <option value="sao_199">e ソードアート・オンライン 閃光の軌跡</option>
+    </select>
+  </div>
 
   <!-- ステータスパネル -->
   <div class="status-panel">
@@ -323,8 +386,25 @@
     <div class="status-item"><span>回転数</span><span id="val-rotations" class="status-value">0</span></div>
   </div>
 
-  <!-- 設定エリア (速度切替・自動入金) -->
+  <!-- 設定エリア -->
   <div class="setting-panel">
+    <div class="setting-row">
+      <div class="setting-group-inline">
+        <span>レート:</span>
+        <select id="select-rate" class="select-box">
+          <option value="1.25">1.25円</option>
+          <option value="1">1円</option>
+        </select>
+      </div>
+      <div class="setting-group-inline">
+        <span>釘:</span>
+        <select id="select-nail" class="select-box">
+          <option value="1.0">普通</option>
+          <option value="1.1">甘い</option>
+          <option value="0.9">辛い</option>
+        </select>
+      </div>
+    </div>
     <div class="setting-row">
       <span>左打ち消化速度:</span>
       <div class="speed-btn-group">
@@ -385,6 +465,30 @@
 </div>
 
 <script>
+  // 機種スペック定義
+  const MACHINE_SPECS = {
+    sao_99: {
+      name: 'e ソードアート・オンライン 閃光の軌跡 99ver.',
+      border: 12.9,
+      leftProb: 1 / 99.9,
+      rightProb: 1 / 35.2,
+      grossPtFactor: 80,
+      netBallFactor: (8 - 1) * 10, // 70
+      stSword: 32,
+      stLightning: 77
+    },
+    sao_199: {
+      name: 'e ソードアート・オンライン 閃光の軌跡',
+      border: 17.5,
+      leftProb: 1 / 199.9,
+      rightProb: 1 / 59.9,
+      grossPtFactor: 150,
+      netBallFactor: (15 - 1) * 10, // 140
+      stSword: 50,
+      stLightning: 115
+    }
+  };
+
   // ゲーム状態管理
   let investment = 0;
   let balls = 0;
@@ -394,6 +498,10 @@
   let totalPt = 0;
   let stock = 0;
   let stCount = 0;
+
+  // RUSH突入履歴フラグ
+  let hasSwordRush = false;
+  let hasLightningRush = false;
 
   let leftSpeedMs = 25; // デフォルト40玉 (25ms)
   let rightSpeedMs = 500; // デフォルト普通 (500ms)
@@ -408,6 +516,10 @@
   let historyData = [];
 
   // DOM要素
+  const selectMachine = document.getElementById('select-machine');
+  const selectRate = document.getElementById('select-rate');
+  const selectNail = document.getElementById('select-nail');
+
   const elInvestment = document.getElementById('val-investment');
   const elBalls = document.getElementById('val-balls');
   const elRotations = document.getElementById('val-rotations');
@@ -439,12 +551,17 @@
   // 初期化
   updateUI();
 
+  // 機種変更
+  selectMachine.addEventListener('change', () => {
+    document.title = MACHINE_SPECS[selectMachine.value].name;
+    updateUI();
+  });
+
   // 左打ち速度設定切り替え
   function setSpeed(ms, element) {
     leftSpeedMs = ms;
     [btnSpeed250, btnSpeed100, btnSpeed50, btnSpeed25].forEach(btn => btn.classList.remove('active'));
     element.classList.add('active');
-    // 左打ち時のみタイマー速度を即時変更
     if (isStartOn && mode === 'LEFT') startLoop();
   }
 
@@ -458,7 +575,6 @@
     rightSpeedMs = ms;
     [btnRightSpeed500, btnRightSpeed250].forEach(btn => btn.classList.remove('active'));
     element.classList.add('active');
-    // 右打ち時のみタイマー速度を即時変更
     if (isStartOn && mode !== 'LEFT') startLoop();
   }
 
@@ -477,11 +593,17 @@
     }
   });
 
+  // 1プッシュ貸出処理
+  function processRent() {
+    const rate = parseFloat(selectRate.value);
+    investment += 200;
+    balls += Math.round(200 / rate);
+    updateUI();
+  }
+
   // 貸出ボタン
   btnRent.addEventListener('click', () => {
-    investment += 200;
-    balls += 160;
-    updateUI();
+    processRent();
   });
 
   // スタートスイッチ切り替え
@@ -526,9 +648,7 @@
 
       if (balls <= 0) {
         if (isAutoDeposit) {
-          investment += 200;
-          balls += 160;
-          updateUI();
+          processRent();
         } else {
           stopStartSwitch();
           modalOutOfBalls.classList.add('active');
@@ -536,17 +656,23 @@
         }
       }
 
+      const spec = MACHINE_SPECS[selectMachine.value];
+
       if (mode === 'LEFT') {
         balls -= 1;
-        if (Math.random() * 100 < 7.225) {
+        // ボーダーを基にした回転確率判定
+        const nailMultiplier = parseFloat(selectNail.value);
+        const startProb = (spec.border / 200 * 1.12) * nailMultiplier;
+
+        if (Math.random() < startProb) {
           rotations += 1;
-          if (Math.random() < (1 / 99.9)) {
+          if (Math.random() < spec.leftProb) {
             handleLeftHit();
           }
         }
       } else if (mode === 'SWORD_RUSH') {
         rotations += 1;
-        if (Math.random() < (1 / 35.2)) {
+        if (Math.random() < spec.rightProb) {
           handleSwordRushHit();
         } else {
           stCount -= 1;
@@ -556,7 +682,7 @@
         }
       } else if (mode === 'LIGHTNING_RUSH') {
         rotations += 1;
-        if (Math.random() < (1 / 35.2)) {
+        if (Math.random() < spec.rightProb) {
           handleLightningRushHit();
         } else {
           if (stock === 0) {
@@ -568,7 +694,7 @@
         }
       } else if (mode === 'TOKONATSU') {
         rotations += 1;
-        if (Math.random() < (1 / 35.2)) {
+        if (Math.random() < spec.rightProb) {
           handleTokonatsuHit();
         } else {
           stCount -= 1;
@@ -584,6 +710,16 @@
     }, interval);
   }
 
+  // 出玉・Pt計算
+  function addBonusPoints(rounds) {
+    const spec = MACHINE_SPECS[selectMachine.value];
+    const grossPt = spec.grossPtFactor * rounds;
+    const netBalls = spec.netBallFactor * rounds;
+    totalPt += grossPt;
+    balls += netBalls;
+    return { grossPt, netBalls };
+  }
+
   // --- 大当り処理群 ---
 
   function handleLeftHit() {
@@ -591,43 +727,81 @@
     currentFirstHitRotations = rotations;
     rotations = 0;
     rushCount += 1;
+    hasSwordRush = false;
+    hasLightningRush = false;
 
+    const key = selectMachine.value;
+    const spec = MACHINE_SPECS[key];
     const rand = Math.random() * 100;
-    if (rand < 1) {
-      addBonusPoints(10);
-      stock += 1;
-      showPresentation(`<div class="font-gold">LIGHTNING RUSH突入！！！</div><div style="margin-top:10px;">800Pt獲得</div>`, 5000, () => {
-        mode = 'LIGHTNING_RUSH';
-        stCount = 77;
-        isPresenting = false;
-        startLoop();
-        updateUI();
-      });
-    } else if (rand < 55) {
-      addBonusPoints(3);
-      showPresentation(`<div class="font-red">SWORD RUSH突入！</div><div style="margin-top:10px;">240Pt獲得</div>`, 5000, () => {
-        mode = 'SWORD_RUSH';
-        stCount = 32;
-        isPresenting = false;
-        startLoop();
-        updateUI();
-      });
-    } else {
-      addBonusPoints(3);
-      showPresentation(`<div class="font-blue">アタリ（単発）</div><div style="margin-top:10px;">240Pt獲得</div>`, 3000, () => {
-        historyData.push({
-          type: 'hit',
-          firstRot: currentFirstHitRotations,
-          rush: rushCount,
-          pt: totalPt
+
+    if (key === 'sao_99') {
+      if (rand < 1) { // 1%
+        hasLightningRush = true;
+        const res = addBonusPoints(10);
+        stock += 1;
+        showPresentation(`<div class="font-gold">LIGHTNING RUSH突入！！！</div><div style="margin-top:10px;">${res.grossPt}Pt獲得</div>`, 5000, () => {
+          mode = 'LIGHTNING_RUSH';
+          stCount = spec.stLightning;
+          isPresenting = false;
+          startLoop();
+          updateUI();
         });
-        rushCount = 0;
-        totalPt = 0;
-        mode = 'LEFT';
-        isPresenting = false;
-        startLoop();
-        updateUI();
-      });
+      } else if (rand < 55) { // 54%
+        hasSwordRush = true;
+        const res = addBonusPoints(3);
+        showPresentation(`<div class="font-red">SWORD RUSH突入！</div><div style="margin-top:10px;">${res.grossPt}Pt獲得</div>`, 5000, () => {
+          mode = 'SWORD_RUSH';
+          stCount = spec.stSword;
+          isPresenting = false;
+          startLoop();
+          updateUI();
+        });
+      } else { // 45%
+        const res = addBonusPoints(3);
+        showPresentation(`<div class="font-blue">アタリ（単発）</div><div style="margin-top:10px;">${res.grossPt}Pt獲得</div>`, 3000, () => {
+          recordHitHistory();
+          rushCount = 0;
+          totalPt = 0;
+          mode = 'LEFT';
+          isPresenting = false;
+          startLoop();
+          updateUI();
+        });
+      }
+    } else { // sao_199
+      if (rand < 1) { // 1%
+        hasLightningRush = true;
+        const res = addBonusPoints(10);
+        stock += 1;
+        showPresentation(`<div class="font-gold">LIGHTNING RUSH突入！！！</div><div style="margin-top:10px;">${res.grossPt}Pt獲得</div>`, 5000, () => {
+          mode = 'LIGHTNING_RUSH';
+          stCount = spec.stLightning;
+          isPresenting = false;
+          startLoop();
+          updateUI();
+        });
+      } else if (rand < 70) { // 69%
+        hasSwordRush = true;
+        const res = addBonusPoints(2);
+        showPresentation(`<div class="font-red">SWORD RUSH突入！</div><div style="margin-top:10px;">${res.grossPt}Pt獲得</div>`, 5000, () => {
+          mode = 'SWORD_RUSH';
+          stCount = spec.stSword;
+          isPresenting = false;
+          startLoop();
+          updateUI();
+        });
+      } else { // 30%
+        const res = addBonusPoints(2);
+        showPresentation(`<div class="font-blue">アタリ（単発）</div><div style="margin-top:10px;">${res.grossPt}Pt獲得</div>`, 3000, () => {
+          recordHitHistory();
+          rushCount = 0;
+          totalPt = 0;
+          mode = 'LEFT';
+          isPresenting = false;
+          startLoop();
+          updateUI();
+        });
+      }
     }
   }
 
@@ -636,42 +810,88 @@
     rotations = 0;
     rushCount += 1;
 
+    const key = selectMachine.value;
+    const spec = MACHINE_SPECS[key];
     const rand = Math.random() * 100;
-    if (rand < 1) {
-      addBonusPoints(10);
-      stock += 1;
-      showPresentation(`<div class="font-gold">LIGHTNING RUSH突入！！！</div><div style="margin-top:10px;">800Pt獲得</div>`, 5000, () => {
-        mode = 'LIGHTNING_RUSH';
-        stCount = 77;
-        isPresenting = false;
-        startLoop();
-        updateUI();
-      });
-    } else if (rand < 16.5) {
-      addBonusPoints(10);
-      showPresentation(`<div class="font-gold">LIGHTNING RUSH突入！！！</div><div style="margin-top:10px;">800Pt獲得</div>`, 5000, () => {
-        mode = 'LIGHTNING_RUSH';
-        stCount = 77;
-        isPresenting = false;
-        startLoop();
-        updateUI();
-      });
-    } else if (rand < 65) {
-      addBonusPoints(10);
-      showPresentation(`<div class="font-red">アタリ！！！</div><div style="margin-top:10px;">800Pt獲得</div>`, 5000, () => {
-        stCount = 32;
-        isPresenting = false;
-        startLoop();
-        updateUI();
-      });
-    } else {
-      addBonusPoints(3);
-      showPresentation(`<div class="font-blue">アタリ！！！</div><div style="margin-top:10px;">240Pt獲得</div>`, 5000, () => {
-        stCount = 32;
-        isPresenting = false;
-        startLoop();
-        updateUI();
-      });
+
+    if (key === 'sao_99') {
+      if (rand < 1) { // 1%
+        hasLightningRush = true;
+        const res = addBonusPoints(10);
+        stock += 1;
+        showPresentation(`<div class="font-gold">LIGHTNING RUSH突入！！！</div><div style="margin-top:10px;">${res.grossPt}Pt獲得</div>`, 5000, () => {
+          mode = 'LIGHTNING_RUSH';
+          stCount = spec.stLightning;
+          isPresenting = false;
+          startLoop();
+          updateUI();
+        });
+      } else if (rand < 16.5) { // 15.5%
+        hasLightningRush = true;
+        const res = addBonusPoints(10);
+        showPresentation(`<div class="font-gold">LIGHTNING RUSH突入！！！</div><div style="margin-top:10px;">${res.grossPt}Pt獲得</div>`, 5000, () => {
+          mode = 'LIGHTNING_RUSH';
+          stCount = spec.stLightning;
+          isPresenting = false;
+          startLoop();
+          updateUI();
+        });
+      } else if (rand < 65) { // 48.5%
+        const res = addBonusPoints(10);
+        showPresentation(`<div class="font-red">アタリ！！！</div><div style="margin-top:10px;">${res.grossPt}Pt獲得</div>`, 5000, () => {
+          stCount = spec.stSword;
+          isPresenting = false;
+          startLoop();
+          updateUI();
+        });
+      } else { // 35%
+        const res = addBonusPoints(3);
+        showPresentation(`<div class="font-blue">アタリ！！！</div><div style="margin-top:10px;">${res.grossPt}Pt獲得</div>`, 5000, () => {
+          stCount = spec.stSword;
+          isPresenting = false;
+          startLoop();
+          updateUI();
+        });
+      }
+    } else { // sao_199
+      if (rand < 3) { // 3%
+        hasLightningRush = true;
+        const res = addBonusPoints(10);
+        stock += 1;
+        showPresentation(`<div class="font-gold">LIGHTNING RUSH突入！！！</div><div style="margin-top:10px;">${res.grossPt}Pt獲得</div>`, 5000, () => {
+          mode = 'LIGHTNING_RUSH';
+          stCount = spec.stLightning;
+          isPresenting = false;
+          startLoop();
+          updateUI();
+        });
+      } else if (rand < 30) { // 27%
+        hasLightningRush = true;
+        const res = addBonusPoints(10);
+        showPresentation(`<div class="font-gold">LIGHTNING RUSH突入！！！</div><div style="margin-top:10px;">${res.grossPt}Pt獲得</div>`, 5000, () => {
+          mode = 'LIGHTNING_RUSH';
+          stCount = spec.stLightning;
+          isPresenting = false;
+          startLoop();
+          updateUI();
+        });
+      } else if (rand < 70) { // 40%
+        const res = addBonusPoints(10);
+        showPresentation(`<div class="font-red">アタリ！！！</div><div style="margin-top:10px;">${res.grossPt}Pt獲得</div>`, 5000, () => {
+          stCount = spec.stSword;
+          isPresenting = false;
+          startLoop();
+          updateUI();
+        });
+      } else { // 30%
+        const res = addBonusPoints(2);
+        showPresentation(`<div class="font-blue">アタリ！！！</div><div style="margin-top:10px;">${res.grossPt}Pt獲得</div>`, 5000, () => {
+          stCount = spec.stSword;
+          isPresenting = false;
+          startLoop();
+          updateUI();
+        });
+      }
     }
   }
 
@@ -681,87 +901,70 @@
     rushCount += 1;
     if (stock > 0) stock -= 1;
 
+    const key = selectMachine.value;
+    const spec = MACHINE_SPECS[key];
     const rand = Math.random() * 100;
-    if (rand < 33) {
-      stock += 1;
-      addBonusPoints(10);
-      showPresentation(`<div class="font-gold">アタリ！！！</div><div style="margin-top:10px;">800Pt獲得</div>`, 5000, () => {
-        stCount = 77;
-        isPresenting = false;
-        startLoop();
-        updateUI();
-      });
-    } else if (rand < 65) {
-      addBonusPoints(10);
-      showPresentation(`<div class="font-red">アタリ！！！</div><div style="margin-top:10px;">800Pt獲得</div>`, 5000, () => {
-        stCount = 77;
-        isPresenting = false;
-        startLoop();
-        updateUI();
-      });
-    } else {
-      addBonusPoints(3);
-      showPresentation(`<div class="font-blue">アタリ！！！</div><div style="margin-top:10px;">240Pt獲得</div>`, 5000, () => {
-        stCount = 77;
-        isPresenting = false;
-        startLoop();
-        updateUI();
-      });
+
+    if (key === 'sao_99') {
+      if (rand < 33) { // 33%
+        stock += 1;
+        const res = addBonusPoints(10);
+        showPresentation(`<div class="font-gold">アタリ！！！</div><div style="margin-top:10px;">${res.grossPt}Pt獲得</div>`, 5000, () => {
+          stCount = spec.stLightning;
+          isPresenting = false;
+          startLoop();
+          updateUI();
+        });
+      } else if (rand < 65) { // 32%
+        const res = addBonusPoints(10);
+        showPresentation(`<div class="font-red">アタリ！！！</div><div style="margin-top:10px;">${res.grossPt}Pt獲得</div>`, 5000, () => {
+          stCount = spec.stLightning;
+          isPresenting = false;
+          startLoop();
+          updateUI();
+        });
+      } else { // 35%
+        const res = addBonusPoints(3);
+        showPresentation(`<div class="font-blue">アタリ！！！</div><div style="margin-top:10px;">${res.grossPt}Pt獲得</div>`, 5000, () => {
+          stCount = spec.stLightning;
+          isPresenting = false;
+          startLoop();
+          updateUI();
+        });
+      }
+    } else { // sao_199
+      if (rand < 22.5) { // 22.5%
+        stock += 1;
+        const res = addBonusPoints(10);
+        showPresentation(`<div class="font-gold">アタリ！！！</div><div style="margin-top:10px;">${res.grossPt}Pt獲得</div>`, 5000, () => {
+          stCount = spec.stLightning;
+          isPresenting = false;
+          startLoop();
+          updateUI();
+        });
+      } else if (rand < 70) { // 47.5%
+        const res = addBonusPoints(10);
+        showPresentation(`<div class="font-red">アタリ！！！</div><div style="margin-top:10px;">${res.grossPt}Pt獲得</div>`, 5000, () => {
+          stCount = spec.stLightning;
+          isPresenting = false;
+          startLoop();
+          updateUI();
+        });
+      } else { // 30%
+        const res = addBonusPoints(2);
+        showPresentation(`<div class="font-blue">アタリ！！！</div><div style="margin-top:10px;">${res.grossPt}Pt獲得</div>`, 5000, () => {
+          stCount = spec.stLightning;
+          isPresenting = false;
+          startLoop();
+          updateUI();
+        });
+      }
     }
   }
 
   function handleTokonatsuHit() {
-    isPresenting = true;
-    currentFirstHitRotations = rotations;
-    rotations = 0;
-    rushCount += 1;
-
-    const rand = Math.random() * 100;
-    if (rand < 1) {
-      addBonusPoints(10);
-      stock += 1;
-      showPresentation(`<div class="font-gold">LIGHTNING RUSH突入！！！</div><div style="margin-top:10px;">800Pt獲得</div>`, 5000, () => {
-        mode = 'LIGHTNING_RUSH';
-        stCount = 77;
-        isPresenting = false;
-        startLoop();
-        updateUI();
-      });
-    } else if (rand < 16.5) {
-      addBonusPoints(10);
-      showPresentation(`<div class="font-gold">LIGHTNING RUSH突入！！！</div><div style="margin-top:10px;">800Pt獲得</div>`, 5000, () => {
-        mode = 'LIGHTNING_RUSH';
-        stCount = 77;
-        isPresenting = false;
-        startLoop();
-        updateUI();
-      });
-    } else if (rand < 65) {
-      addBonusPoints(10);
-      showPresentation(`<div class="font-red">アタリ！！！</div><div style="margin-top:10px;">800Pt獲得</div>`, 5000, () => {
-        mode = 'SWORD_RUSH';
-        stCount = 32;
-        isPresenting = false;
-        startLoop();
-        updateUI();
-      });
-    } else {
-      addBonusPoints(3);
-      showPresentation(`<div class="font-blue">アタリ！！！</div><div style="margin-top:10px;">240Pt獲得</div>`, 5000, () => {
-        mode = 'SWORD_RUSH';
-        stCount = 32;
-        isPresenting = false;
-        startLoop();
-        updateUI();
-      });
-    }
-  }
-
-  function addBonusPoints(rounds) {
-    const grossPt = 80 * rounds;
-    const netBalls = (8 - 1) * 10 * rounds;
-    totalPt += grossPt;
-    balls += netBalls;
+    // 常夏ステージの当落振り分けは SWORD RUSH と同一
+    handleSwordRushHit();
   }
 
   function triggerTokonatsuTransition() {
@@ -774,12 +977,7 @@
     `;
 
     showPresentation(resultHtml, 5000, () => {
-      historyData.push({
-        type: 'hit',
-        firstRot: currentFirstHitRotations,
-        rush: rushCount,
-        pt: totalPt
-      });
+      recordHitHistory();
       rushCount = 0;
       totalPt = 0;
       mode = 'TOKONATSU';
@@ -787,6 +985,17 @@
       isPresenting = false;
       startLoop();
       updateUI();
+    });
+  }
+
+  function recordHitHistory() {
+    historyData.push({
+      type: 'hit',
+      firstRot: currentFirstHitRotations,
+      rush: rushCount,
+      pt: totalPt,
+      hasSword: hasSwordRush,
+      hasLightning: hasLightningRush
     });
   }
 
@@ -809,9 +1018,7 @@
 
   btnOutContinue.addEventListener('click', () => {
     modalOutOfBalls.classList.remove('active');
-    investment += 200;
-    balls += 160;
-    updateUI();
+    processRent();
     turnOnStartSwitch();
   });
 
@@ -826,7 +1033,8 @@
       return;
     }
 
-    const cashout = Math.floor(balls / 448) * 500;
+    const rate = parseFloat(selectRate.value);
+    const cashout = Math.floor(balls / (448 * (1.25 / rate))) * 500;
     const balance = cashout - investment;
 
     historyData.push({
@@ -845,6 +1053,8 @@
     stock = 0;
     stCount = 0;
     mode = 'LEFT';
+    hasSwordRush = false;
+    hasLightningRush = false;
     isPresenting = false;
 
     updateUI();
@@ -856,6 +1066,12 @@
   });
 
   function updateUI() {
+    // 投資が0の時のみ設定用プルダウンを有効化
+    const isZeroInvestment = (investment === 0);
+    selectMachine.disabled = !isZeroInvestment;
+    selectRate.disabled = !isZeroInvestment;
+    selectNail.disabled = !isZeroInvestment;
+
     elInvestment.textContent = `${investment.toLocaleString()}円`;
     elBalls.textContent = `${balls.toLocaleString()}玉`;
     elRotations.textContent = rotations;
@@ -912,31 +1128,37 @@
           <tr>
             <th></th>
             <th>初当たり</th>
-            <th>RUSH</th>
+            <th>連</th>
             <th>獲得Pt</th>
+            <th>RUSH</th>
           </tr>
         </thead>
         <tbody>
     `;
 
     if (historyData.length === 0) {
-      html += `<tr><td colspan="4" style="color:#777;">履歴はありません</td></tr>`;
+      html += `<tr><td colspan="5" style="color:#777;">履歴はありません</td></tr>`;
     } else {
       let hitIndex = 1;
       historyData.forEach(item => {
         if (item.type === 'hit') {
+          let rushIcons = '';
+          if (item.hasSword) rushIcons += '<span class="icon-sword">●</span>';
+          if (item.hasLightning) rushIcons += '<span class="icon-lightning">●</span>';
+
           html += `
             <tr>
               <td>${hitIndex++}</td>
               <td>${item.firstRot}</td>
               <td>${item.rush}</td>
               <td>${item.pt.toLocaleString()}</td>
+              <td>${rushIcons}</td>
             </tr>
           `;
         } else if (item.type === 'summary') {
           html += `
             <tr>
-              <td colspan="4" style="padding: 10px 0;">
+              <td colspan="5" style="padding: 10px 0;">
                 <div class="summary-border">
                   投資 ${item.investment.toLocaleString()}円 回収 ${item.cashout.toLocaleString()}円<br>
                   収支 ${item.balance >= 0 ? '+' : ''}${item.balance.toLocaleString()}円
