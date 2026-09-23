@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>e ソードアート・オンライン 閃光の軌跡 99ver.</title>
+  <style>
+    :root {
+      --bg-color: #0f111a;
+      --card-bg: #1a1d2e;
+      --accent-color: #00d2ff;
+      --gold-color: #ffd700;
+      --red-color: #ff3366;
+      --blue-color: #00bfff;
+      --text-color: #e0e6ed;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 10px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 500px;
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      border: 1px solid #2a2f4c;
+    }
+
+    h1 {
+      font-size: 1.1rem;
+      text-align: center;
+      margin-bottom: 15px;
+      color: var(--accent-color);
+      border-bottom: 2px solid var(--accent-color);
+      padding-bottom: 8px;
+    }
+
+    /* ステータス表示部 */
+    .status-panel {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      background: #111322;
+      padding: 12px;
+      border-radius: 10px;
+      margin-bottom: 15px;
+      font-size: 0.85rem;
+    }
+
+    .status-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .status-value {
+      font-weight: bold;
+      color: #fff;
+    }
+
+    /* 設定エリア（速度・自動入金） */
+    .setting-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: #111322;
+      padding: 10px 12px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      font-size: 0.85rem;
+    }
+
+    .setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .speed-btn-group {
+      display: flex;
+      gap: 6px;
+    }
+
+    .btn-setting {
+      padding: 4px 8px;
+      border: 1px solid #2a2f4c;
+      border-radius: 4px;
+      background: #1a1d2e;
+      color: #aaa;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: bold;
+      transition: all 0.2s;
+    }
+
+    .btn-setting.active {
+      background: var(--accent-color);
+      color: #000;
+      border-color: var(--accent-color);
+    }
+
+    .btn-toggle {
+      padding: 4px 12px;
+      border: 1px solid #2a2f4c;
+      border-radius: 4px;
+      background: #333;
+      color: #fff;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: bold;
+      transition: all 0.2s;
+    }
+
+    .btn-toggle.on {
+      background: #28a745;
+      border-color: #28a745;
+    }
+
+    /* 液晶メイン画面 */
+    .screen {
+      height: 220px;
+      background: #000;
+      border: 3px solid #333;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 15px;
+      margin-bottom: 15px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+    }
+
+    .mode-title {
+      font-size: 1.4rem;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+
+    .sub-info {
+      font-size: 1rem;
+      color: #ccc;
+      line-height: 1.5;
+    }
+
+    /* 演出用テキスト */
+    .font-gold {
+      color: var(--gold-color);
+      font-weight: 900;
+      font-size: 1.4rem;
+      text-shadow: 0 0 10px rgba(255, 215, 0, 0.8), 0 0 20px rgba(255, 140, 0, 0.8);
+    }
+
+    .font-red {
+      color: var(--red-color);
+      font-weight: 900;
+      font-size: 1.4rem;
+      text-shadow: 0 0 10px rgba(255, 51, 102, 0.8);
+    }
+
+    .font-blue {
+      color: var(--blue-color);
+      font-weight: 900;
+      font-size: 1.4rem;
+      text-shadow: 0 0 10px rgba(0, 191, 255, 0.8);
+    }
+
+    /* コントロールボタン部 */
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .btn {
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: #fff;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-rent {
+      background: #28a745;
+    }
+
+    .btn-start {
+      background: #6c757d;
+    }
+
+    .btn-start.on {
+      background: #dc3545;
+      box-shadow: 0 0 12px rgba(220, 53, 69, 0.6);
+    }
+
+    .btn-history {
+      background: #17a2b8;
+    }
+
+    .btn-end {
+      background: #ff8c00;
+    }
+
+    /* モーダル共通 */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.8);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--card-bg);
+      width: 90%;
+      max-width: 420px;
+      max-height: 80vh;
+      border-radius: 12px;
+      padding: 20px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid var(--accent-color);
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 10px; right: 15px;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #aaa;
+    }
+
+    .close-btn:hover {
+      color: #fff;
+    }
+
+    .history-list {
+      overflow-y: auto;
+      margin-top: 15px;
+      font-family: monospace;
+      white-space: pre-wrap;
+      font-size: 0.9rem;
+      background: #111322;
+      padding: 10px;
+      border-radius: 6px;
+    }
+
+    .history-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: center;
+    }
+
+    .history-table th, .history-table td {
+      padding: 6px 4px;
+      border-bottom: 1px solid #2a2f4c;
+    }
+
+    .summary-border {
+      border-top: 2px solid #555;
+      border-bottom: 2px solid #555;
+      padding: 8px 0;
+      margin: 6px 0;
+      text-align: left;
+    }
+
+    .out-of-balls-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      justify-content: center;
+    }
+
+    .out-of-balls-actions .btn {
+      flex: 1;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>e ソードアート・オンライン 閃光の軌跡 99ver.</h1>
+
+  <!-- ステータスパネル -->
+  <div class="status-panel">
+    <div class="status-item"><span>投資</span><span id="val-investment" class="status-value">0円</span></div>
+    <div class="status-item"><span>持玉</span><span id="val-balls" class="status-value">0玉</span></div>
+    <div class="status-item"><span>回転数</span><span id="val-rotations" class="status-value">0</span></div>
+  </div>
+
+  <!-- 設定エリア (速度切替・自動入金) -->
+  <div class="setting-panel">
+    <div class="setting-row">
+      <span>左打ち消化速度:</span>
+      <div class="speed-btn-group">
+        <button class="btn-setting" id="btn-speed-250">4玉</button>
+        <button class="btn-setting" id="btn-speed-100">10玉</button>
+        <button class="btn-setting" id="btn-speed-50">20玉</button>
+        <button class="btn-setting active" id="btn-speed-25">40玉</button>
+      </div>
+    </div>
+    <div class="setting-row">
+      <span>右打ち消化速度:</span>
+      <div class="speed-btn-group">
+        <button class="btn-setting active" id="btn-right-speed-500">普通</button>
+        <button class="btn-setting" id="btn-right-speed-250">速い</button>
+      </div>
+    </div>
+    <div class="setting-row">
+      <span>自動入金:</span>
+      <button class="btn-toggle on" id="btn-auto-deposit">ON</button>
+    </div>
+  </div>
+
+  <!-- メイン液晶画面 -->
+  <div class="screen" id="screen">
+    <!-- 動的に表示内容が更新されます -->
+  </div>
+
+  <!-- 操作ボタン -->
+  <div class="controls">
+    <button class="btn btn-rent" id="btn-rent">貸出</button>
+    <button class="btn btn-start" id="btn-start">スタート: OFF</button>
+    <button class="btn btn-history" id="btn-history">履歴</button>
+    <button class="btn btn-end" id="btn-end">ゲーム終了</button>
+  </div>
+</div>
+
+<!-- 履歴モーダル -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal-content">
+    <span class="close-btn" id="modal-close">&times;</span>
+    <h2 style="font-size: 1.1rem; text-align: center;">遊戯履歴</h2>
+    <div class="history-list" id="history-content">
+      <!-- 履歴テーブル表示エリア -->
+    </div>
+  </div>
+</div>
+
+<!-- 持玉切れモーダル -->
+<div class="modal-overlay" id="modal-out-of-balls">
+  <div class="modal-content" style="text-align: center;">
+    <span class="close-btn" id="modal-out-close">&times;</span>
+    <h2 style="font-size: 1.2rem; margin-top: 10px;">持玉がなくなりました</h2>
+    <div class="out-of-balls-actions">
+      <button class="btn btn-rent" id="btn-out-continue">続ける</button>
+      <button class="btn btn-end" id="btn-out-end">ゲーム終了</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ゲーム状態管理
+  let investment = 0;
+  let balls = 0;
+  let rotations = 0;
+  let currentFirstHitRotations = 0;
+  let rushCount = 0;
+  let totalPt = 0;
+  let stock = 0;
+  let stCount = 0;
+
+  let leftSpeedMs = 25; // デフォルト40玉 (25ms)
+  let rightSpeedMs = 500; // デフォルト普通 (500ms)
+  let isAutoDeposit = true; // デフォルトON
+
+  let mode = 'LEFT'; // 'LEFT', 'SWORD_RUSH', 'LIGHTNING_RUSH', 'TOKONATSU'
+  let isStartOn = false;
+  let isPresenting = false;
+  let timerId = null;
+
+  // 履歴データ配列
+  let historyData = [];
+
+  // DOM要素
+  const elInvestment = document.getElementById('val-investment');
+  const elBalls = document.getElementById('val-balls');
+  const elRotations = document.getElementById('val-rotations');
+  const elScreen = document.getElementById('screen');
+  const btnRent = document.getElementById('btn-rent');
+  const btnStart = document.getElementById('btn-start');
+  const btnHistory = document.getElementById('btn-history');
+  const btnEnd = document.getElementById('btn-end');
+
+  const btnSpeed250 = document.getElementById('btn-speed-250');
+  const btnSpeed100 = document.getElementById('btn-speed-100');
+  const btnSpeed50 = document.getElementById('btn-speed-50');
+  const btnSpeed25 = document.getElementById('btn-speed-25');
+
+  const btnRightSpeed500 = document.getElementById('btn-right-speed-500');
+  const btnRightSpeed250 = document.getElementById('btn-right-speed-250');
+
+  const btnAutoDeposit = document.getElementById('btn-auto-deposit');
+
+  const modalOverlay = document.getElementById('modal-overlay');
+  const modalClose = document.getElementById('modal-close');
+  const historyContent = document.getElementById('history-content');
+
+  const modalOutOfBalls = document.getElementById('modal-out-of-balls');
+  const modalOutClose = document.getElementById('modal-out-close');
+  const btnOutContinue = document.getElementById('btn-out-continue');
+  const btnOutEnd = document.getElementById('btn-out-end');
+
+  // 初期化
+  updateUI();
+
+  // 左打ち速度設定切り替え
+  function setSpeed(ms, element) {
+    leftSpeedMs = ms;
+    [btnSpeed250, btnSpeed100, btnSpeed50, btnSpeed25].forEach(btn => btn.classList.remove('active'));
+    element.classList.add('active');
+    // 左打ち時のみタイマー速度を即時変更
+    if (isStartOn && mode === 'LEFT') startLoop();
+  }
+
+  btnSpeed250.addEventListener('click', () => setSpeed(250, btnSpeed250));
+  btnSpeed100.addEventListener('click', () => setSpeed(100, btnSpeed100));
+  btnSpeed50.addEventListener('click', () => setSpeed(50, btnSpeed50));
+  btnSpeed25.addEventListener('click', () => setSpeed(25, btnSpeed25));
+
+  // 右打ち速度設定切り替え
+  function setRightSpeed(ms, element) {
+    rightSpeedMs = ms;
+    [btnRightSpeed500, btnRightSpeed250].forEach(btn => btn.classList.remove('active'));
+    element.classList.add('active');
+    // 右打ち時のみタイマー速度を即時変更
+    if (isStartOn && mode !== 'LEFT') startLoop();
+  }
+
+  btnRightSpeed500.addEventListener('click', () => setRightSpeed(500, btnRightSpeed500));
+  btnRightSpeed250.addEventListener('click', () => setRightSpeed(250, btnRightSpeed250));
+
+  // 自動入金切り替え
+  btnAutoDeposit.addEventListener('click', () => {
+    isAutoDeposit = !isAutoDeposit;
+    if (isAutoDeposit) {
+      btnAutoDeposit.classList.add('on');
+      btnAutoDeposit.textContent = 'ON';
+    } else {
+      btnAutoDeposit.classList.remove('on');
+      btnAutoDeposit.textContent = 'OFF';
+    }
+  });
+
+  // 貸出ボタン
+  btnRent.addEventListener('click', () => {
+    investment += 200;
+    balls += 160;
+    updateUI();
+  });
+
+  // スタートスイッチ切り替え
+  btnStart.addEventListener('click', () => {
+    if (isStartOn) {
+      stopStartSwitch();
+    } else {
+      turnOnStartSwitch();
+    }
+  });
+
+  function turnOnStartSwitch() {
+    isStartOn = true;
+    btnStart.classList.add('on');
+    btnStart.textContent = 'スタート: ON';
+    startLoop();
+  }
+
+  function stopStartSwitch() {
+    isStartOn = false;
+    btnStart.classList.remove('on');
+    btnStart.textContent = 'スタート: OFF';
+    if (timerId) {
+      clearInterval(timerId);
+      timerId = null;
+    }
+  }
+
+  // モードに応じたインターバル取得
+  function getCurrentInterval() {
+    return mode === 'LEFT' ? leftSpeedMs : rightSpeedMs;
+  }
+
+  // メインゲームループ
+  function startLoop() {
+    if (timerId) clearInterval(timerId);
+    
+    const interval = getCurrentInterval();
+    timerId = setInterval(() => {
+      if (!isStartOn) return;
+      if (isPresenting) return;
+
+      if (balls <= 0) {
+        if (isAutoDeposit) {
+          investment += 200;
+          balls += 160;
+          updateUI();
+        } else {
+          stopStartSwitch();
+          modalOutOfBalls.classList.add('active');
+          return;
+        }
+      }
+
+      if (mode === 'LEFT') {
+        balls -= 1;
+        if (Math.random() * 100 < 7.225) {
+          rotations += 1;
+          if (Math.random() < (1 / 99.9)) {
+            handleLeftHit();
+          }
+        }
+      } else if (mode === 'SWORD_RUSH') {
+        rotations += 1;
+        if (Math.random() < (1 / 35.2)) {
+          handleSwordRushHit();
+        } else {
+          stCount -= 1;
+          if (stCount <= 0) {
+            triggerTokonatsuTransition();
+          }
+        }
+      } else if (mode === 'LIGHTNING_RUSH') {
+        rotations += 1;
+        if (Math.random() < (1 / 35.2)) {
+          handleLightningRushHit();
+        } else {
+          if (stock === 0) {
+            stCount -= 1;
+            if (stCount <= 0) {
+              triggerTokonatsuTransition();
+            }
+          }
+        }
+      } else if (mode === 'TOKONATSU') {
+        rotations += 1;
+        if (Math.random() < (1 / 35.2)) {
+          handleTokonatsuHit();
+        } else {
+          stCount -= 1;
+          if (stCount <= 0) {
+            mode = 'LEFT';
+            stCount = 0;
+            startLoop();
+          }
+        }
+      }
+
+      updateUI();
+    }, interval);
+  }
+
+  // --- 大当り処理群 ---
+
+  function handleLeftHit() {
+    isPresenting = true;
+    currentFirstHitRotations = rotations;
+    rotations = 0;
+    rushCount += 1;
+
+    const rand = Math.random() * 100;
+    if (rand < 1) {
+      addBonusPoints(10);
+      stock += 1;
+      showPresentation(`<div class="font-gold">LIGHTNING RUSH突入！！！</div><div style="margin-top:10px;">800Pt獲得</div>`, 5000, () => {
+        mode = 'LIGHTNING_RUSH';
+        stCount = 77;
+        isPresenting = false;
+        startLoop();
+        updateUI();
+      });
+    } else if (rand < 55) {
+      addBonusPoints(3);
+      showPresentation(`<div class="font-red">SWORD RUSH突入！</div><div style="margin-top:10px;">240Pt獲得</div>`, 5000, () => {
+        mode = 'SWORD_RUSH';
+        stCount = 32;
+        isPresenting = false;
+        startLoop();
+        updateUI();
+      });
+    } else {
+      addBonusPoints(3);
+      showPresentation(`<div class="font-blue">アタリ（単発）</div><div style="margin-top:10px;">240Pt獲得</div>`, 3000, () => {
+        historyData.push({
+          type: 'hit',
+          firstRot: currentFirstHitRotations,
+          rush: rushCount,
+          pt: totalPt
+        });
+        rushCount = 0;
+        totalPt = 0;
+        mode = 'LEFT';
+        isPresenting = false;
+        startLoop();
+        updateUI();
+      });
+    }
+  }
+
+  function handleSwordRushHit() {
+    isPresenting = true;
+    rotations = 0;
+    rushCount += 1;
+
+    const rand = Math.random() * 100;
+    if (rand < 1) {
+      addBonusPoints(10);
+      stock += 1;
+      showPresentation(`<div class="font-gold">LIGHTNING RUSH突入！！！</div><div style="margin-top:10px;">800Pt獲得</div>`, 5000, () => {
+        mode = 'LIGHTNING_RUSH';
+        stCount = 77;
+        isPresenting = false;
+        startLoop();
+        updateUI();
+      });
+    } else if (rand < 16.5) {
+      addBonusPoints(10);
+      showPresentation(`<div class="font-gold">LIGHTNING RUSH突入！！！</div><div style="margin-top:10px;">800Pt獲得</div>`, 5000, () => {
+        mode = 'LIGHTNING_RUSH';
+        stCount = 77;
+        isPresenting = false;
+        startLoop();
+        updateUI();
+      });
+    } else if (rand < 65) {
+      addBonusPoints(10);
+      showPresentation(`<div class="font-red">アタリ！！！</div><div style="margin-top:10px;">800Pt獲得</div>`, 5000, () => {
+        stCount = 32;
+        isPresenting = false;
+        startLoop();
+        updateUI();
+      });
+    } else {
+      addBonusPoints(3);
+      showPresentation(`<div class="font-blue">アタリ！！！</div><div style="margin-top:10px;">240Pt獲得</div>`, 5000, () => {
+        stCount = 32;
+        isPresenting = false;
+        startLoop();
+        updateUI();
+      });
+    }
+  }
+
+  function handleLightningRushHit() {
+    isPresenting = true;
+    rotations = 0;
+    rushCount += 1;
+    if (stock > 0) stock -= 1;
+
+    const rand = Math.random() * 100;
+    if (rand < 33) {
+      stock += 1;
+      addBonusPoints(10);
+      showPresentation(`<div class="font-gold">アタリ！！！</div><div style="margin-top:10px;">800Pt獲得</div>`, 5000, () => {
+        stCount = 77;
+        isPresenting = false;
+        startLoop();
+        updateUI();
+      });
+    } else if (rand < 65) {
+      addBonusPoints(10);
+      showPresentation(`<div class="font-red">アタリ！！！</div><div style="margin-top:10px;">800Pt獲得</div>`, 5000, () => {
+        stCount = 77;
+        isPresenting = false;
+        startLoop();
+        updateUI();
+      });
+    } else {
+      addBonusPoints(3);
+      showPresentation(`<div class="font-blue">アタリ！！！</div><div style="margin-top:10px;">240Pt獲得</div>`, 5000, () => {
+        stCount = 77;
+        isPresenting = false;
+        startLoop();
+        updateUI();
+      });
+    }
+  }
+
+  function handleTokonatsuHit() {
+    isPresenting = true;
+    currentFirstHitRotations = rotations;
+    rotations = 0;
+    rushCount += 1;
+
+    const rand = Math.random() * 100;
+    if (rand < 1) {
+      addBonusPoints(10);
+      stock += 1;
+      showPresentation(`<div class="font-gold">LIGHTNING RUSH突入！！！</div><div style="margin-top:10px;">800Pt獲得</div>`, 5000, () => {
+        mode = 'LIGHTNING_RUSH';
+        stCount = 77;
+        isPresenting = false;
+        startLoop();
+        updateUI();
+      });
+    } else if (rand < 16.5) {
+      addBonusPoints(10);
+      showPresentation(`<div class="font-gold">LIGHTNING RUSH突入！！！</div><div style="margin-top:10px;">800Pt獲得</div>`, 5000, () => {
+        mode = 'LIGHTNING_RUSH';
+        stCount = 77;
+        isPresenting = false;
+        startLoop();
+        updateUI();
+      });
+    } else if (rand < 65) {
+      addBonusPoints(10);
+      showPresentation(`<div class="font-red">アタリ！！！</div><div style="margin-top:10px;">800Pt獲得</div>`, 5000, () => {
+        mode = 'SWORD_RUSH';
+        stCount = 32;
+        isPresenting = false;
+        startLoop();
+        updateUI();
+      });
+    } else {
+      addBonusPoints(3);
+      showPresentation(`<div class="font-blue">アタリ！！！</div><div style="margin-top:10px;">240Pt獲得</div>`, 5000, () => {
+        mode = 'SWORD_RUSH';
+        stCount = 32;
+        isPresenting = false;
+        startLoop();
+        updateUI();
+      });
+    }
+  }
+
+  function addBonusPoints(rounds) {
+    const grossPt = 80 * rounds;
+    const netBalls = (8 - 1) * 10 * rounds;
+    totalPt += grossPt;
+    balls += netBalls;
+  }
+
+  function triggerTokonatsuTransition() {
+    isPresenting = true;
+    const resultHtml = `
+      <div style="color:#aaa;">---Result---</div>
+      <div style="font-size:1.5rem; margin: 10px 0;">RUSH ${rushCount}</div>
+      <div style="font-size:1.3rem; color:var(--gold-color);">Total Damage ${totalPt.toLocaleString()}</div>
+      <div style="color:#aaa;">----------------------------</div>
+    `;
+
+    showPresentation(resultHtml, 5000, () => {
+      historyData.push({
+        type: 'hit',
+        firstRot: currentFirstHitRotations,
+        rush: rushCount,
+        pt: totalPt
+      });
+      rushCount = 0;
+      totalPt = 0;
+      mode = 'TOKONATSU';
+      stCount = 4;
+      isPresenting = false;
+      startLoop();
+      updateUI();
+    });
+  }
+
+  function showPresentation(htmlContent, duration, callback) {
+    elScreen.innerHTML = htmlContent;
+    setTimeout(() => {
+      if (callback) callback();
+    }, duration);
+  }
+
+  modalOutClose.addEventListener('click', () => {
+    modalOutOfBalls.classList.remove('active');
+  });
+
+  modalOutOfBalls.addEventListener('click', (e) => {
+    if (e.target === modalOutOfBalls) {
+      modalOutOfBalls.classList.remove('active');
+    }
+  });
+
+  btnOutContinue.addEventListener('click', () => {
+    modalOutOfBalls.classList.remove('active');
+    investment += 200;
+    balls += 160;
+    updateUI();
+    turnOnStartSwitch();
+  });
+
+  btnOutEnd.addEventListener('click', () => {
+    modalOutOfBalls.classList.remove('active');
+    executeEndGame();
+  });
+
+  function executeEndGame() {
+    if (mode !== 'LEFT') {
+      alert('右打ち中にやめるべきではない');
+      return;
+    }
+
+    const cashout = Math.floor(balls / 448) * 500;
+    const balance = cashout - investment;
+
+    historyData.push({
+      type: 'summary',
+      investment: investment,
+      cashout: cashout,
+      balance: balance
+    });
+
+    stopStartSwitch();
+    investment = 0;
+    balls = 0;
+    rotations = 0;
+    rushCount = 0;
+    totalPt = 0;
+    stock = 0;
+    stCount = 0;
+    mode = 'LEFT';
+    isPresenting = false;
+
+    updateUI();
+    alert('遊戯を終了し、結果を履歴に記録しました。');
+  }
+
+  btnEnd.addEventListener('click', () => {
+    executeEndGame();
+  });
+
+  function updateUI() {
+    elInvestment.textContent = `${investment.toLocaleString()}円`;
+    elBalls.textContent = `${balls.toLocaleString()}玉`;
+    elRotations.textContent = rotations;
+
+    if (!isPresenting) {
+      if (mode === 'LEFT') {
+        elScreen.innerHTML = `
+          <div class="mode-title" style="color:var(--accent-color);">左打ち</div>
+          <div class="sub-info">スタートスイッチを入れて<br>遊戯を開始してください</div>
+        `;
+      } else if (mode === 'SWORD_RUSH') {
+        elScreen.innerHTML = `
+          <div class="mode-title font-red">SWORD RUSH</div>
+          <div class="sub-info" style="color:#ff3366; font-weight:bold;">右打ち</div>
+          <div class="sub-info" style="margin-top:10px; font-weight:bold;">RUSH ${rushCount} / ${totalPt.toLocaleString()} Pt</div>
+          <div class="sub-info" style="margin-top:5px;">残り [${stCount}]</div>
+        `;
+      } else if (mode === 'LIGHTNING_RUSH') {
+        const displaySt = (stock >= 1) ? '∞' : stCount;
+        elScreen.innerHTML = `
+          <div class="mode-title font-gold">LIGHTNING RUSH</div>
+          <div class="sub-info" style="color:var(--gold-color); font-weight:bold;">右打ち</div>
+          <div class="sub-info" style="margin-top:10px; font-weight:bold;">RUSH ${rushCount} / ${totalPt.toLocaleString()} Pt</div>
+          <div class="sub-info" style="margin-top:5px;">残り [${displaySt}]</div>
+        `;
+      } else if (mode === 'TOKONATSU') {
+        elScreen.innerHTML = `
+          <div class="mode-title" style="color:#ff00ea;">常夏ステージ</div>
+          <div class="sub-info" style="margin-top:10px;">残り保留 [${stCount}]</div>
+        `;
+      }
+    }
+  }
+
+  btnHistory.addEventListener('click', () => {
+    renderHistoryTable();
+    modalOverlay.classList.add('active');
+  });
+
+  modalClose.addEventListener('click', () => {
+    modalOverlay.classList.remove('active');
+  });
+
+  modalOverlay.addEventListener('click', (e) => {
+    if (e.target === modalOverlay) {
+      modalOverlay.classList.remove('active');
+    }
+  });
+
+  function renderHistoryTable() {
+    let html = `
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th></th>
+            <th>初当たり</th>
+            <th>RUSH</th>
+            <th>獲得Pt</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+    if (historyData.length === 0) {
+      html += `<tr><td colspan="4" style="color:#777;">履歴はありません</td></tr>`;
+    } else {
+      let hitIndex = 1;
+      historyData.forEach(item => {
+        if (item.type === 'hit') {
+          html += `
+            <tr>
+              <td>${hitIndex++}</td>
+              <td>${item.firstRot}</td>
+              <td>${item.rush}</td>
+              <td>${item.pt.toLocaleString()}</td>
+            </tr>
+          `;
+        } else if (item.type === 'summary') {
+          html += `
+            <tr>
+              <td colspan="4" style="padding: 10px 0;">
+                <div class="summary-border">
+                  投資 ${item.investment.toLocaleString()}円 回収 ${item.cashout.toLocaleString()}円<br>
+                  収支 ${item.balance >= 0 ? '+' : ''}${item.balance.toLocaleString()}円
+                </div>
+              </td>
+            </tr>
+          `;
+        }
+      });
+    }
+
+    html += `</tbody></table>`;
+    historyContent.innerHTML = html;
+  }
+</script>
+</body>
+</html>
