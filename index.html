@@ -419,6 +419,7 @@
       <div class="speed-btn-group">
         <button class="btn-setting active" id="btn-right-speed-500">普通</button>
         <button class="btn-setting" id="btn-right-speed-250">速い</button>
+        <button class="btn-setting" id="btn-right-speed-100">超速</button>
       </div>
     </div>
     <div class="setting-row">
@@ -536,6 +537,7 @@
 
   const btnRightSpeed500 = document.getElementById('btn-right-speed-500');
   const btnRightSpeed250 = document.getElementById('btn-right-speed-250');
+  const btnRightSpeed100 = document.getElementById('btn-right-speed-100');
 
   const btnAutoDeposit = document.getElementById('btn-auto-deposit');
 
@@ -573,13 +575,14 @@
   // 右打ち速度設定切り替え
   function setRightSpeed(ms, element) {
     rightSpeedMs = ms;
-    [btnRightSpeed500, btnRightSpeed250].forEach(btn => btn.classList.remove('active'));
+    [btnRightSpeed500, btnRightSpeed250, btnRightSpeed100].forEach(btn => btn.classList.remove('active'));
     element.classList.add('active');
     if (isStartOn && mode !== 'LEFT') startLoop();
   }
 
   btnRightSpeed500.addEventListener('click', () => setRightSpeed(500, btnRightSpeed500));
   btnRightSpeed250.addEventListener('click', () => setRightSpeed(250, btnRightSpeed250));
+  btnRightSpeed100.addEventListener('click', () => setRightSpeed(100, btnRightSpeed100));
 
   // 自動入金切り替え
   btnAutoDeposit.addEventListener('click', () => {
